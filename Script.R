@@ -180,5 +180,5 @@ ggplot (data = pi_data_frame, aes(x=log10(B), y = estimated_pi)) +
   geom_hline(aes(yintercept = pi), color = "red" , linetype ="dashed") +
   labs (x = "Log10 of # of number of Experiments", y= "Simulation Result (PI approximation through the Circle Method)", title = "How to determine the [right] size of a Monte Carlo simulation?", subtitle ="As number of simulations increases, the result stabilizes approximating to 3.14", caption = "https://github.com/albertofrison") +
   theme_bw()
-
+ 
 ggsave(filename = "3. Monte Carlo Experiment Approximation of PI.png", device = "png")
