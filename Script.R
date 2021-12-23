@@ -1,9 +1,10 @@
 # A set of examples that use the Monte Carlo Simulation to estimate results (as well as compute exact result trough statistics or formulas)
-# These exercises are inspired by
+# These exercises are inspired by:
 # the Probability Module of the EdX - Harvard Professional Certificate in Data Science go and check them out: https://www.edx.org/professional-certificate/harvardx-data-science
 # the Italian Wikipedia Page on the Monte Carlo Method: https://it.wikipedia.org/wiki/Metodo_Monte_Carlo
 # I also try to discover how big needs a Monte Carlo simulation be? OR, how many times do we need to make a Montecarlo Simulation to estimate the right results? 
-# Sometimes Monte Carlo simulations are too heavy computationally speaking and the number of experiments need to be carefully determinated 
+# Sometimes Monte Carlo simulations are too heavy computationally speaking and the number of experiments need to be carefully determinated
+# You understand that this code is made by a beginner programmer :)
 
 #####
 # Needed Libraries
@@ -52,7 +53,7 @@ ggplot (data = black_jack_df, aes(x=log10(B), y = Result)) +
 
 #Saves the Plot
 ggsave(filename = "1. Monte Carlo Experiment Black Jack.png", device = "png")
-
+################################################################################################################################################# END
 
 
 #####
@@ -75,25 +76,30 @@ birthdays_computed_prob <- function (n, B = 10000) {
 }
 
 # Plotting the Results and Testing the correctness of the Simulations
-index <- c(1:60) # class size
+index <- c(1:55) # class size
 b_days_computed <- sapply (index, birthdays_computed_prob) #computation through Monte Carlo
 b_days_exact <- sapply (index, birthdays_exact_prob) #computation through Statistical Theory
 
 birthdays_df <- data.frame (index, b_days_computed, b_days_exact) 
 
-# This plot is very sexy in IMHO 
+# This plot is very sexy in IMHO - demonstrates graphically how the MC simulations approximates the statistical reality
 ggplot (data = birthdays_df) +
   geom_point (aes(x = index, y = b_days_computed), color = "blue",  size = 1.5) +
   geom_line (aes(x = index, y = b_days_exact), color = "red",  size = 1) +
   scale_y_continuous(labels = scales::percent) 
 
+ggsave(filename = "2. Monte Carlo Experiment Birthday Problem - Identity 1.png", device = "png")
+
 # Answer to the question: what happens with a group of 50 people? It is almost impossible to have NO double birthdays!!! Very counter intuitive!
 ggplot (data = birthdays_df) +
   geom_point (aes(x = index, y = b_days_exact), color = "red") +
-  labs (x = "Grandezza del gruppo di amici", y= "Probabilità che ci sia almeno un doppio compleanno", title = "Probabilità di un doppio compleanno in un gruppo di amici", subtitle ="In un gruppo di 50 amici è quasi impossibile che non ci sia un doppio compleanno") +
+  labs (x = "Group Size", y= "Probability of a Double Birthday", title = "Probability of a Double Birthday in a group of friends", subtitle ="In a group of 50 people, it is very unlikely that there is no double birthay along the year") +
   scale_y_continuous(labels = scales::percent) +
   geom_hline(aes(yintercept = birthdays_exact_prob(50)), color = "blue" , linetype ="dashed") +
   geom_vline(aes(xintercept = 50), color = "blue" , linetype ="dashed")
+
+ggsave(filename = "2. Monte Carlo Experiment Birthday Problem - Group of 50.png", device = "png")
+
 
 birthdays_computed_prob_B <- function (B, n = 28) {    # modified to have 28 as a fixed constant and B as a variable
   same_day <- replicate (B, {
@@ -111,9 +117,9 @@ b_days_computed_B <- sapply (B, birthdays_computed_prob_B) # each simulation has
 birthdays_df_2 <- data.frame (B, b_days_computed_B) 
 
 ggplot (data = birthdays_df_2, aes(x=log10(B), y = b_days_computed_B)) +
-  geom_line () +
-  geom_hline(aes(yintercept = exact2_prob(22)), color = "red" , linetype ="dashed") +
-  labs (x = "Log10 of # of number of Experiments", y= "Simulation Result (Birthday Problem with group of 22 people)", title = "How to determine the [right] size of a Monte Carlo simulation?", subtitle ="As number of simulations increases, the result stabilizes approximating the red line", caption = "https://github.com/albertofrison") +
+  geom_line (color = "blue") +
+  geom_hline(aes(yintercept = birthdays_exact_prob(28)), color = "red" , linetype ="dashed") +
+  labs (x = "Log10 of # of number of Experiments", y= "Simulation Result (Birthday Problem with group of 28 people)", title = "How to determine the [right] size of a Monte Carlo simulation?", subtitle ="As number of simulations increases, the result stabilizes approximating the red line", caption = "https://github.com/albertofrison/MonteCarlo") +
   theme_bw() 
 
 ggsave(filename = "2. Monte Carlo Experiment Birthday Problem.png", device = "png")
@@ -132,7 +138,7 @@ circles <- data.frame(x=0,y=0,r=1)      #dummy df to plot a circle...
 theme_set(theme_void())                 #clear all space
 
 # Real Algorithm starts here
-B <- 10^6                               # size of experiment (number of points in the square / circle)
+B <- 10^1                               # size of experiment (number of points in the square / circle)
 x <- sapply (B, runif)                  # vector of x positions
 y <- sapply (B, runif)                  # vector of y positions
 x <- ifelse(runif(B)<0.5,x,-x)          # 50% possibility to have a positive or negative x (to have a whole circle)
@@ -170,7 +176,7 @@ pi_data_frame <- data.frame (B, estimated_pi) # dataframe ready for plot - x = B
 
 #plot of the stabilization chart
 ggplot (data = pi_data_frame, aes(x=log10(B), y = estimated_pi)) +
-  geom_line () +
+  geom_line (color = "blue") +
   geom_hline(aes(yintercept = pi), color = "red" , linetype ="dashed") +
   labs (x = "Log10 of # of number of Experiments", y= "Simulation Result (PI approximation through the Circle Method)", title = "How to determine the [right] size of a Monte Carlo simulation?", subtitle ="As number of simulations increases, the result stabilizes approximating to 3.14", caption = "https://github.com/albertofrison") +
   theme_bw()
