@@ -38,10 +38,11 @@ monte_carlo_nat_21 <-  function (B) {
   })))
 }
 
+
+
 # We have made the function that makes the B experiments and retunrs A probability, now we can prepare a set of experiments testing the accuracy of the model
 B <- 10^seq(1,6, len = 100)               # a list of number of Experiments from 10^1 to 10^6 - 100 rows (10^1 plays 10 hands, 10^6 plays a million hands)
 prob <- sapply (B, monte_carlo_nat_21)    # prob will contain 100 rows, with a ever increasing guess on the probability of a natural 21
-
 black_jack_df <- data.frame(B = B, Result = prob)   # I rather use ggplot with a data.frame
 
 # The following chart, tests both the model (graphically) AND plots the increasing stability of the process (as B increases)
@@ -52,7 +53,7 @@ ggplot (data = black_jack_df, aes(x=log10(B), y = Result)) +
   theme_bw()
 
 #Saves the Plot
-ggsave(filename = "1. Monte Carlo Experiment Black Jack.png", device = "png")
+#ggsave(filename = "1. Monte Carlo Experiment Black Jack.png", device = "png")
 ################################################################################################################################################# END
 
 
@@ -133,6 +134,9 @@ ggsave(filename = "2. Monte Carlo Experiment Birthday Problem.png", device = "pn
 #Facendo il rapporto del numero dei punti che cadono nel settore di disco con il numero dei tiri effettuati si ottiene un'approssimazione del numero PI_GRECO/4 se il numero dei tiri ? grande.
 #Eseguendo numericamente l'esempio si ottiene un andamento percentuale dell'errore mostrato nel grafico sottostante.
 
+# I know very little of how R prints and thingks about decimals
+print (pi, digits=17)
+
 
 circles <- data.frame(x=0,y=0,r=1)      #dummy df to plot a circle...
 theme_set(theme_void())                 #clear all space
@@ -162,14 +166,13 @@ ggsave(filename = paste("3. Monte Carlo Experiment Birthday Problem - B ", B, ".
 
 ######
 #### Trying to estimate a good B for the PI estimation
-
 estimate_pi <- function (B) {
   x <- sapply (B, runif)                      # vector of x positions
   y <- sapply (B, runif)                      # vector of y positions
-  return (sum((x^2 + y^2) <1)/B*4)            # estimation of pi
+  return (sum((x^2 + y^2) <1)/B*4)              # estimation of pi
 }
 
-B <- 10^seq(1,7, len = 500)                   # B (number of experiments) goes from 10^1 to 10^7 with 500 intermediate values 
+B <- 10^seq(1,6, len = 100)                   # B (number of experiments) goes from 10^1 to 10^7 with 500 intermediate values 
 estimated_pi <- sapply (B, estimate_pi)       # let's make the vector of results of simulations as B increases
 
 pi_data_frame <- data.frame (B, estimated_pi) # dataframe ready for plot - x = B, y = the estimated value of pi based on the number of B points randomly launched in the circle/square area
@@ -182,3 +185,38 @@ ggplot (data = pi_data_frame, aes(x=log10(B), y = estimated_pi)) +
   theme_bw()
  
 ggsave(filename = "3. Monte Carlo Experiment Approximation of PI.png", device = "png")
+
+
+
+###########################################################################################################################
+# TESTING R ABILITY TO MAKE COMPUTATIONS
+# BLACK JACK -> SECONDS TO COMPUTE THE SERIES UP TO 10^6 EXPERIMENTS:
+start_time_01 <- Sys.time()
+prob <- sapply (B, monte_carlo_nat_21)
+end_time_01 <- Sys.time()
+end_time_01 -start_time_01
+
+# BIRTHDAYS -> SECONDS TO COMPUTE THE SERIES UP TO 10^6 EXPERIMENTS: 
+start_time_02 <- Sys.time()
+b_days_computed_B <- sapply (B, birthdays_computed_prob_B)
+end_time_02 <- Sys.time()
+end_time_02 -start_time_02
+
+# PI ESTIMATION -> SECONDS TO COMPUTE THE SERIES UP TO 10^6 EXPERIMENTS: 
+B <- 10^seq(1,9, len = 100)
+start_time_03 <- Sys.time()
+estimated_pi <- sapply (B, estimate_pi)
+end_time_03 <- Sys.time()
+end_time_03 - start_time_03
+
+# -->>>>> SELECTED PI ESTIMATION EXPERIMENT
+
+pi_data_frame <- data.frame (B, estimated_pi)
+
+ggplot (data = pi_data_frame, aes(x=log10(B), y = estimated_pi)) +
+  geom_line (color = "blue") +
+  geom_hline(aes(yintercept = pi), color = "red" , linetype ="dashed") +
+  labs (x = "Log10 of # of number of Experiments", y= "Simulation Result (PI approximation through the Circle Method)", title = "PI Approximation through a Monte Carlo Simulation", subtitle =paste("PI approximates to: ",pi_data_frame[100,]$estimated_pi, sep=""), caption = "https://github.com/albertofrison") +
+  theme_bw()
+
+ggsave(filename = "3. Monte Carlo Experiment Approximation of PI - LONG VERSION.png", device = "png")
