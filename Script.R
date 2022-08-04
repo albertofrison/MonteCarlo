@@ -16,8 +16,10 @@ library (ggforce)
 # 01 BLACK JACK AND NATURAL 21
 suits <- c("Diamond", "Clubs", "Hearts", "Spades")
 numbers <- c("Ace", "Deuce", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King")
-deck <- expand.grid (number = numbers, suit = suits) #combines lists
+deck <- expand.grid (number = numbers, suit = suits)  #combines lists
 deck <- paste (deck$number, deck$suit)
+
+class(deck)
 
 # Estimation of getting a Natural 21: An ACE Plus a Facecard (OR viceversa)
 aces <- paste ("Ace", suits)
@@ -37,7 +39,6 @@ monte_carlo_nat_21 <-  function (B) {
     (hand[1] %in% aces & hand [2] %in% facecard) | (hand[1] %in% facecard & hand[2] %in% aces)
   })))
 }
-
 
 
 # We have made the function that makes the B experiments and retunrs A probability, now we can prepare a set of experiments testing the accuracy of the model
@@ -142,7 +143,7 @@ circles <- data.frame(x=0,y=0,r=1)      #dummy df to plot a circle...
 theme_set(theme_void())                 #clear all space
 
 # Real Algorithm starts here
-B <- 10^1                               # size of experiment (number of points in the square / circle)
+B <- 10^5                               # size of experiment (number of points in the square / circle)
 x <- sapply (B, runif)                  # vector of x positions
 y <- sapply (B, runif)                  # vector of y positions
 x <- ifelse(runif(B)<0.5,x,-x)          # 50% possibility to have a positive or negative x (to have a whole circle)
@@ -158,7 +159,7 @@ ggplot () +
   coord_fixed()+                                                                                    # keeps proportions of x vs y
   geom_hline(aes(yintercept = 0), color = "red" , linetype ="dashed") +                             # the axis
   geom_vline(aes(xintercept = 0), color = "red" , linetype ="dashed") +
-  ggtitle(paste("Number of points: ",B," - Estimation of PI = ",ext_pi, sep="")) +
+  ggtitle(paste("Number of Darts: ",B," - Estimation of PI = ",ext_pi, sep="")) +
   theme(panel.background = element_rect(fill = "lightblue", colour = "lightblue"))
   
 ggsave(filename = paste("3. Monte Carlo Experiment Birthday Problem - B ", B, ".png", sep=""), device = "png")
@@ -220,3 +221,40 @@ ggplot (data = pi_data_frame, aes(x=log10(B), y = estimated_pi)) +
   theme_bw()
 
 ggsave(filename = "3. Monte Carlo Experiment Approximation of PI - LONG VERSION.png", device = "png")
+
+
+############################################################################################################
+# 4. SEQUENCES STRICTLY INCREASING IN DICE
+# Question from DATA SCIENCE DOJO - https://www.linkedin.com/company/data-science-dojo/
+# Say you roll three dice, one by one. What is the probability that you obtain 3 numbers in a strictly increasing order?
+
+die <- c(1:6)   # creates a 6 faces die
+#a <- sample (die,3, replace = TRUE)
+#a
+#a[1] < a[2] && a[2] < a[3] 
+
+stricly_increasing <- function (B) {
+  return (mean(replicate (B, {
+      a <- sample (die,3, replace = TRUE)
+      a[1] < a[2] && a[2] < a[3]
+    })))
+}
+
+B <- 10^seq (1,6, len = 100)
+prob <- sapply (B,stricly_increasing)
+die_strictly_increasing_df <- data.frame (B = B, Result = prob)
+
+# You have (1, 2, 3-6), (1, 3, 4-6), (1, 4, 5-6) and (1,5,6),
+# then (2, 3, 4-6), (2, 4, 5-6) and (2, 5, 6),
+# then (3, 4, 5-6) and (3, 5, 6),
+# then finally (4, 5, 6) as successful outcomes so 4+3+2+1+3+2+1+2+1+1 which is 10+6+3+1 which is 20 successful outcomes.
+# From a possible 6*6*6=216 events.
+prob_die_strictly_increasing <- 20/(6^3)
+
+ggplot (data = die_strictly_increasing_df, aes(x=log10(B), y = Result)) +
+  geom_line (color  = "blue") +
+  geom_hline(aes(yintercept = prob_die_strictly_increasing), color = "red" , linetype ="dashed") +
+  labs (x = "Log10 of # of Number of Experiments", y= "Simulation Result (Probability of 3 strictly increasing numbers on a throw of 3 dice)", title = "Right size of a Monte Carlo simulation [Strictly Incresaing Dice (3)]", subtitle ="As the number of experiments increases, the Result stabilizes approximating the correct probability", caption = "https://github.com/albertofrison/MonteCarlo") +
+  theme_bw()
+
+#ggsave("4. Striclty Increasing Dice.png", device = "png")
